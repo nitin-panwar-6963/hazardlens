@@ -1,112 +1,93 @@
 # 🚨 HazardLens
+### Real-Time AI Surveillance, Hazard Detection & Emergency Response Platform
 
-### Autonomous Hazard Detection & Emergency Response Platform
-
-HazardLens is an AI-powered surveillance system that transforms traditional CCTV cameras into intelligent hazard monitoring agents capable of detecting emergencies in real time.
-
-The system continuously monitors live video feeds, detects hazards such as fire, smoke, and overcrowding, and instantly generates visual and voice alerts to reduce emergency response time.
+HazardLens is an edge-optimized, autonomous AI surveillance system that transforms traditional CCTV cameras into intelligent hazard monitoring agents. Built using dual YOLOv8 architectures and a zero-dependency local neural TTS engine, it continuously monitors live video feeds for fire, smoke, and overcrowding, delivering instant visual banners and Hindi voice broadcasts to dramatically reduce emergency response time.
 
 ---
 
 ## 📌 Problem Statement
 
-Traditional CCTV systems are passive monitoring tools.
+Traditional CCTV systems are passive monitoring tools. In emergency situations, incidents are detected only after a human operator notices them, verifies them, and manually escalates the alarm. This critical delay increases physical damage, risks human life, and slows down emergency response.
 
-In most emergency situations, incidents are detected only after a human operator notices them, verifies them, and manually escalates the situation. This delay can lead to increased damage, risk to human life, and slower emergency response.
-
-HazardLens aims to bridge this gap by providing real-time automated hazard detection and alert generation.
+HazardLens bridges this gap by providing **low-latency automated hazard detection, smart alert prioritization, and instant localized voice broadcasts** at the edge.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- 🔥 Real-time Fire Detection
-- 🌫️ Smoke Detection
-- 👥 Crowd Monitoring & Overcrowding Alerts
-- 🎙️ Hindi Voice Announcements using Sarvam AI
-- 📹 IP Camera / CCTV Feed Support
-- 🖥️ Tactical Command Center Dashboard
-- 🚨 Automated Hazard Alert Generation
-- ⚡ Real-time AI Inference Pipeline
+- 🔥 **Real-time Fire & Smoke Detection:** Custom fine-tuned AI model with multilingual class mapping.
+- 👥 **Crowd Monitoring & Overcrowding Alerts:** Real-time human density tracking and threshold-based alerts.
+- 🎙️ **Zero-Dependency Hindi Neural Voice Alerts:** Locally powered by Microsoft Edge-TTS (`hi-IN-SwaraNeural`) — completely free and offline-capable.
+- 🎯 **False-Positive Immunity (`conf=0.70`):** Optimized detection thresholds to ignore shadows, lighting changes, and skin tones.
+- ⚡ **"Latest Hazard Wins" State Machine:** Prevents UI freezes, alert looping, and audio overlapping.
+- 📹 **IP Camera / CCTV Feed Support:** Direct OpenCV frame stream processing.
+- 🖥️ **Tactical Command Center Dashboard:** Low-latency interface built on Streamlit shared memory architecture.
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-Live CCTV Feed
-        │
-        ▼
-  Video Processing
-        │
- ┌──────┴──────┐
- ▼             ▼
-
-Fire Model   Crowd Model
- (YOLO)       (YOLOv8)
-
- ▼             ▼
-
-Hazard Detection Engine
-          │
-          ▼
-
-     Alert Manager
-          │
-    ┌─────┴─────┐
-    ▼           ▼
-
-Visual Alert  Voice Alert
-              (Sarvam AI)
-```
+               Live CCTV / IP Camera Feed
+                           │
+                           ▼
+              OpenCV Video Frame Processing
+                           │
+                 ┌─────────┴─────────┐
+                 ▼                   ▼
+          Fire / Smoke Model    Crowd Model
+         (Custom best.pt 6MB)  (YOLOv8n 6MB)
+                 │                   │
+                 └─────────┬─────────┘
+                           ▼
+              Hazard Detection Engine (conf=0.70)
+                           │
+                           ▼
+                 Alert & Event Manager
+                           │
+                 ┌─────────┴─────────┐
+                 ▼                   ▼
+         Visual Alert Banner    Hindi Voice Alert
+          (Streamlit UI DOM)   (Edge-TTS Neural Voice)
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- Streamlit
+### Frontend & Dashboard
+- Streamlit (Shared Memory Architecture)
 
 ### Computer Vision
-- OpenCV
-- YOLOv8
-- Custom Fire Detection Model
+- OpenCV (`opencv-python-headless`)
+- Ultralytics YOLOv8
+- Custom Fire & Smoke Detection Model (`best.pt` - 6MB)
 
-### AI Services
-- Sarvam AI Text-to-Speech
+### AI Voice Engine
+- Microsoft Edge-TTS (`hi-IN-SwaraNeural` — Local Hindi Neural Voice)
 
-### Backend
-- Python
+### Core & Backend
+- Python 3.10+
+- `asyncio` (Asynchronous Audio Generation)
 
 ### Utilities
 - NumPy
-- Requests
-- Dotenv
+- Pillow
 
 ---
 
-## 🚀 Installation
+## 🚀 Installation & Quick Start
 
-### Clone Repository
+### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-username/HazardLens.git
+git clone [https://github.com/tusharsingh-sde/HazardLens.git](https://github.com/tusharsingh-sde/HazardLens.git)
 
 cd HazardLens
-```
 
 ### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
-```
-
-### Configure Environment Variables
-
-Create a `.env` file:
-
-```env
-SARVAM_API_KEY=YOUR_API_KEY
 ```
 
 ### Run Application
@@ -117,44 +98,26 @@ streamlit run app.py
 
 ---
 
-## 📸 Screenshots
-
-### Dashboard
-
-![Dashboard](screenshots/dashboard.png)
-
-### Fire Detection
-
-![Fire Detection](screenshots/fire-alert.png)
-
-### Crowd Detection
-
-![Crowd Detection](screenshots/crowd-alert.png)
-
----
-
 ## 🎯 Potential Applications
 
-- Smart Cities
+- Smart Cities & Urban Surveillance
 - University Campuses
-- Railway Stations
-- Airports
-- Shopping Malls
-- Industrial Facilities
-- Public Event Monitoring
-- Traffic Surveillance
+- Railway Stations & Airports
+- Shopping Malls & Retail Hubs
+- Industrial Facilities & Warehouses
+- Public Event & Concert Monitoring
+- Traffic & Gate Surveillance
 
 ---
 
 ## 🔮 Future Roadmap
 
-- Automated Fire Brigade Dispatch
-- Police Dispatch Integration
-- Emergency SMS/WhatsApp Alerts
-- GIS-Based Incident Mapping
-- Multi-Camera Incident Correlation
-- Severity Scoring Engine
-- Incident Reporting Dashboard
+- Zero-lag real-time CCTV stream processing via shared memory
+- Dual-model AI inference architecture (best.pt + yolov8n.pt)
+- False-positive mitigation (conf=0.70 threshold tuning)
+- Automated offline Hindi voice alerts without cloud API bottlenecks
+- Race-condition audio collision and DOM freeze prevention
+- "Latest Hazard Wins" priority triage state machine
 
 ---
 

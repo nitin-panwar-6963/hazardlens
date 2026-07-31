@@ -1,10 +1,14 @@
-# Ignore API keys
+# Ignore API keys & Environment variables
 .env
 
-# Ignore Virtual Environments (to reduce large file upload size)
+# Ignore Virtual Environments & Cache
 .venv/
 venv/
 __pycache__/
 
-# Ignore heavy default model (best.pt is just 6.8MB)
+# Ignore Auto-downloaded base model & Legacy backups
 yolov8n.pt
+old_best.pt
+
+# Ignore Generated Audio Alerts
+*.mp3

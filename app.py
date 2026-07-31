@@ -1,18 +1,12 @@
 import streamlit as st
 import cv2
-import requests
 import base64
 import numpy as np
 from ultralytics import YOLO
 from datetime import datetime
+import edge_tts
+import asyncio
 import os
-from dotenv import load_dotenv
-load_dotenv()
-# ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURATION
-# ─────────────────────────────────────────────────────────────────────────────
-SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")  # API KEY
-
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
@@ -25,8 +19,6 @@ st.set_page_config(
 
 # ─────────────────────────────────────────────────────────────────────────────
 # GLOBAL CSS — Tactical Command-Center Aesthetic
-# Typography: Rajdhani (display), Inter (body), Share Tech Mono (data)
-# Signature element: CRT scanline overlay on all camera feeds
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -51,7 +43,7 @@ st.markdown("""
 
 /* ── BASE ── */
 .stApp, .main  { background: var(--bg) !important; }
-#MainMenu, footer, header { visibility: hidden !important; }
+#MainMenu, footer { visibility: hidden !important; }
 *, *::before, *::after { box-sizing: border-box; }
 div.block-container { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 
@@ -174,8 +166,7 @@ div[data-testid="stImage"] img {
   border: 1px solid var(--border); border-top: none; border-radius: 0;
 }
 
-/* ── CRT Scanline Overlay — signature element ── */
-/* Subtle repeating horizontal lines give every camera feed a tactical monitor feel */
+/* ── CRT Scanline Overlay ── */
 div[data-testid="stImage"]::after {
   content: '';
   position: absolute; inset: 0;
@@ -187,7 +178,7 @@ div[data-testid="stImage"]::after {
   pointer-events: none; z-index: 5;
 }
 
-/* ── BUTTONS — styled as card footers ── */
+/* ── BUTTONS ── */
 div[data-testid="stButton"] > button {
   font-family: var(--d) !important;
   font-size: 0.7rem !important; font-weight: 600 !important;
@@ -247,7 +238,6 @@ div[data-testid="stToast"] {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* Sidebar button sizing override */
 section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
   border-radius: 3px !important;
   border: 1px solid var(--border) !important;
@@ -306,13 +296,11 @@ def create_placeholder(cam_name, status="STANDBY"):
     h, w = 360, 640
     img = np.zeros((h, w, 3), dtype=np.uint8) + 10
 
-    # Background grid
     for x in range(0, w, 64):
         cv2.line(img, (x, 0), (x, h), (15, 28, 42), 1)
     for y in range(0, h, 64):
         cv2.line(img, (0, y), (w, y), (15, 28, 42), 1)
 
-    # Center targeting reticle
     cx, cy = w // 2, h // 2
     cv2.line(img, (cx - 50, cy), (cx - 12, cy), (26, 50, 68), 1)
     cv2.line(img, (cx + 12, cy), (cx + 50, cy), (26, 50, 68), 1)
@@ -322,7 +310,6 @@ def create_placeholder(cam_name, status="STANDBY"):
     cv2.circle(img, (cx, cy), 55, (18, 34, 50), 1)
     cv2.circle(img, (cx, cy), 3, (28, 54, 72), -1)
 
-    # Corner brackets
     bs = 20
     corners = [(40, 30, 1, 1), (w - 40, 30, -1, 1),
                (40, h - 30, 1, -1), (w - 40, h - 30, -1, -1)]
@@ -330,7 +317,6 @@ def create_placeholder(cam_name, status="STANDBY"):
         cv2.line(img, (bx, by), (bx + bs * dx, by), (26, 50, 68), 1)
         cv2.line(img, (bx, by), (bx, by + bs * dy), (26, 50, 68), 1)
 
-    # Camera name label (centered)
     lw = cv2.getTextSize(cam_name, cv2.FONT_HERSHEY_SIMPLEX, 0.44, 1)[0][0]
     cv2.putText(img, cam_name, (cx - lw // 2, cy - 14),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.44, (36, 68, 88), 1)
@@ -341,25 +327,27 @@ def create_placeholder(cam_name, status="STANDBY"):
     return img
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SARVAM AI TTS  (backend call to generate audio alert in Hindi for fire or crowd)
+# ─── EDGE-TTS HINDI NEURAL VOICE (LIFETIME FREE) ───
+# ('hi-IN-SwaraNeural')
 # ─────────────────────────────────────────────────────────────────────────────
-def trigger_sarvam_loop(text):
-    url     = "https://api.sarvam.ai/text-to-speech"
-    payload = {
-        "inputs": [text], "target_language_code": "hi-IN", "speaker": "shruti",  #language and speaker 
-        "pace": 1.1, "speech_sample_rate": 8000, "enable_preprocessing": True, "model": "bulbul:v3"  #pace, speech rate and speech model
-    }
-    headers = {"api-subscription-key": SARVAM_API_KEY, "Content-Type": "application/json"}  
+def trigger_hindi_alert(text):
+    async def _generate():
+        # for Female = "hi-IN-SwaraNeural" | for Male = "hi-IN-MadhurNeural"
+        communicate = edge_tts.Communicate(text, "hi-IN-SwaraNeural")
+        await communicate.save("temp_alert.mp3")
+    
     try:
-        resp = requests.post(url, json=payload, headers=headers)
-        if resp.status_code == 200:
-            audio_b64 = resp.json().get("audios", [])[0]
-            audio_pos.markdown(
-                f'<audio id="alarm-audio" autoplay loop>'
-                f'<source src="data:audio/wav;base64,{audio_b64}" type="audio/wav"></audio>',
-                unsafe_allow_html=True
-            )
-            st.session_state.audio_loop = True
+        asyncio.run(_generate())
+        
+        with open("temp_alert.mp3", "rb") as f:
+            audio_b64 = base64.b64encode(f.read()).decode()
+            
+        audio_pos.markdown(
+            f'<audio id="alarm-audio" autoplay loop>'
+            f'<source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3"></audio>',
+            unsafe_allow_html=True
+        )
+        st.session_state.audio_loop = True
     except Exception:
         pass
 
@@ -369,15 +357,13 @@ def trigger_sarvam_loop(text):
 with st.sidebar:
     st.markdown('<div class="sb-title">⬡ Control Panel</div>', unsafe_allow_html=True)
 
-    # Feed source
     st.markdown('<div class="sb-lbl">▸ Feed Source</div>', unsafe_allow_html=True)
     ip_url = st.text_input(
         "IP Camera Stream URL",
-        "http://192.168.1.7:8080/video",   #IP camera stream URL
+        "http://192.168.1.7:8080/video",
         label_visibility="collapsed"
     )
 
-    # System control
     st.markdown('<div class="sb-lbl">▸ System Control</div>', unsafe_allow_html=True)
     ca, cb = st.columns(2)
     with ca:
@@ -385,7 +371,6 @@ with st.sidebar:
     with cb:
         st.button("⬛ DISARM", on_click=disarm_system, use_container_width=True)
 
-    # Camera status grid
     st.markdown('<div class="sb-lbl">▸ Camera Status</div>', unsafe_allow_html=True)
     armed_now = st.session_state.system_armed
     cam_registry = [
@@ -411,13 +396,13 @@ with st.sidebar:
           <span class="sb-rs" style="color:{s_color};">{dot_html}{s_text}</span>
         </div>""", unsafe_allow_html=True)
 
-    # System info
+    # ─── UPDATED:  EDGE-TTS ───
     st.markdown('<div class="sb-lbl">▸ System Info</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="sysinfo">
     LOCATION &nbsp;&nbsp; : MIET CAMPUS<br>
     AI ENGINES : TWIN (FIRE + CROWD)<br>
-    TTS ENGINE : SARVAM BULBUL V3<br>
+    TTS ENGINE : EDGE-TTS (HINDI NEURAL)<br>
     LANGUAGE &nbsp;&nbsp; : HI-IN<br>
     FRAME SKIP : 4 FRAMES<br>
     CROWD LIM &nbsp;: 10 PERSONS<br>
@@ -450,12 +435,11 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GLOBAL ALERT & AUDIO PLACEHOLDERS  (must be defined before logic runs)
+# GLOBAL ALERT & AUDIO PLACEHOLDERS
 # ─────────────────────────────────────────────────────────────────────────────
 alert_pos = st.empty()
 audio_pos = st.empty()
 
-# Handle alert clearance
 if st.session_state.do_clear_alert:
     alert_pos.empty()
     audio_pos.empty()
@@ -477,7 +461,6 @@ col1, col2 = st.columns(2)
 metric_cpu    = None
 feed_01_frame = None
 
-# ── CAM 01 — AI-monitored live feed ──
 with col1:
     hdr_cls = "cam-hdr live" if armed else "cam-hdr"
     badge1  = live_badge if armed else stdby_badge
@@ -503,7 +486,6 @@ with col1:
     st.button("🔕 SILENCE CAM 01", key="silence_1",
               on_click=silence_alerts, use_container_width=True)
 
-# ── CAM 02 — Standby ──
 with col2:
     st.markdown(f"""
     <div class="cam-hdr">
@@ -522,7 +504,6 @@ with col2:
 
 col3, col4 = st.columns(2)
 
-# ── CAM 03 — Standby ──
 with col3:
     st.markdown(f"""
     <div class="cam-hdr">
@@ -539,7 +520,6 @@ with col3:
     st.button("🔕 SILENCE CAM 03", key="silence_3",
               on_click=dummy_silence, args=("CAM 03",), use_container_width=True)
 
-# ── CAM 04 — Standby ──
 with col4:
     st.markdown(f"""
     <div class="cam-hdr">
@@ -562,7 +542,7 @@ with col4:
 st.markdown("""
 <div class="ftr">
   <span>⬡ HAZARDLENS COMMAND v2.0 · MIET CAMPUS, MEERUT</span>
-  <span><span class="online">●</span> TWIN AI ONLINE · SARVAM TTS ENABLED</span>
+  <span><span class="online">●</span> TWIN AI ONLINE · EDGE-TTS ENABLED</span>
   <span id="ftr-dt">—</span>
 </div>
 <script>
@@ -575,7 +555,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LIVE LOGIC LOOP  ← BACKEND UNCHANGED FROM ORIGINAL
+# LIVE LOGIC LOOP
 # ─────────────────────────────────────────────────────────────────────────────
 if st.session_state.system_armed:
     cap = cv2.VideoCapture(ip_url)
@@ -593,19 +573,16 @@ if st.session_state.system_armed:
 
         if count % frame_skip == 0:
             # Engine 1: Custom Fire / Smoke model
-            fire_results    = fire_model(frame)
+            fire_results    = fire_model(frame, conf=0.68)
             annotated_frame = fire_results[0].plot()
             annotated_rgb   = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
 
-            # ─── ADDED: REAL-TIME CCTV TIMESTAMP ───
+            # REAL-TIME CCTV TIMESTAMP
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cctv_text = f"REC | CAM 01 | {now}"
             
-            # BLACK outline for better visibility
             cv2.putText(annotated_rgb, cctv_text, (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 0), 4, cv2.LINE_AA)
-            # cyan color text
             cv2.putText(annotated_rgb, cctv_text, (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2, cv2.LINE_AA)
-            # ───────────────────────────────────────
 
             # Engine 2: Base model for crowd counting
             base_results = base_model(frame)
@@ -629,41 +606,55 @@ if st.session_state.system_armed:
                 feed_01_frame.image(annotated_rgb, channels="RGB", use_container_width=True)
 
             # ── FIRE / SMOKE ALERT ──
+            # for Chinese ('火', '烟') and English ('fire', 'smoke') it will handle both cases
             fire_spotted = any(
-                fire_model.names[int(b.cls[0])].lower() in ('fire', 'smoke')
+                fire_model.names[int(b.cls[0])].lower() in ('fire', 'smoke', '火', '烟')
                 for b in fire_results[0].boxes
             )
 
-            if fire_spotted and not st.session_state.alert_sent:
-                alert_pos.markdown("""
-                <div class="a-fire">
-                  <span class="a-ico">🔥</span>
-                  <div>
-                    <div class="a-ttl">Fire / Smoke Hazard Detected — CAM 01</div>
-                    <div class="a-msg">MIET Main Gate · High-confidence AI detection · Fire Safety Team Dispatched</div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
-                trigger_sarvam_loop(
-                    "Kripya dhyan dein. MIET Main Gate par aag detect hui hai. "
-                    "Turant fire safety team dispatch karein." #alert message in hindi for fire
-                )
-                st.session_state.alert_sent = True
+            # ── 2. OVERCROWDING ALERT (Latest Override) ──
+            CROWD_THRESHOLD = 1  
 
-            # ── OVERCROWDING ALERT ──
-            CROWD_THRESHOLD = 10  #crowd threshold for alert
-            if person_count > CROWD_THRESHOLD and not st.session_state.crowd_alert_sent:
-                alert_pos.markdown(f"""
-                <div class="a-crwd">
-                  <span class="a-ico">🚨</span>
-                  <div>
-                    <div class="a-ttl">Overcrowding Detected — CAM 01</div>
-                    <div class="a-msg">MIET Main Gate · Live Count: {person_count} persons · Security Team Dispatch Triggered</div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
-                trigger_sarvam_loop(
-                    "Kripya dhyan dein. MIET Main Gate Entrance par overcrowding detect hui hai "
-                    "Turant security staff dispatch karein." #alert message in hindi for crowd
-                )
-                st.session_state.crowd_alert_sent = True
+            # ── 1. FIRE / SMOKE ALERT ──
+            if fire_spotted:
+                # Trigger only if no Fire Alert is currently active (Fire Alert overrides Crowd Alert).
+                if st.session_state.get("active_alert") != "FIRE":
+                    alert_pos.markdown("""
+                    <div class="a-fire">
+                      <span class="a-ico">🔥</span>
+                      <div>
+                        <div class="a-ttl">Fire / Smoke Hazard Detected — CAM 01</div>
+                        <div class="a-msg">MIET Main Gate · High-confidence AI detection · Fire Safety Team Dispatched</div>
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    trigger_hindi_alert(
+                        "कृपया ध्यान दें। मेन गेट पर आग डिटेक्ट हुई है। तुरंत फायर सेफ्टी टीम डिस्पैच करें।",
+                        filename="fire_alert.mp3"
+                    )
+                    st.session_state.active_alert = "FIRE"
+
+            # ── 2. OVERCROWDING ALERT (Latest Override) ──
+            elif person_count > CROWD_THRESHOLD:
+                # Trigger only if no Fire Alert is currently active (Fire Alert overrides Crowd Alert).
+                if st.session_state.get("active_alert") != "CROWD":
+                    alert_pos.markdown(f"""
+                    <div class="a-crwd">
+                      <span class="a-ico">🚨</span>
+                      <div>
+                        <div class="a-ttl">Overcrowding Detected — CAM 01</div>
+                        <div class="a-msg">MIET Main Gate · Live Count: {person_count} persons · Security Team Dispatch Triggered</div>
+                      </div>
+                    </div>""", unsafe_allow_html=True)
+                    
+                    trigger_hindi_alert(
+                        "कृपया ध्यान दें। मेन गेट एंट्रेंस पर ओवरक्राउडिंग डिटेक्ट हुई है। तुरंत सिक्योरिटी स्टाफ डिस्पैच करें।",
+                        filename="crowd_alert.mp3"
+                    )
+                    st.session_state.active_alert = "CROWD"
+            
+            # ── 3. RESET (if no alerts are detected) ──
+            else:
+                st.session_state.active_alert = None
 
     cap.release()
