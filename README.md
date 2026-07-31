@@ -51,11 +51,12 @@ HazardLens bridges this gap by providing **low-latency automated hazard detectio
           (Streamlit UI DOM)   (Edge-TTS Neural Voice)
 
 ---
-
+```
 ## 🛠️ Tech Stack
 
 ### Frontend & Dashboard
 - Streamlit (Shared Memory Architecture)
+
 
 ### Computer Vision
 - OpenCV (`opencv-python-headless`)
@@ -69,23 +70,23 @@ HazardLens bridges this gap by providing **low-latency automated hazard detectio
 - Python 3.10+
 - `asyncio` (Asynchronous Audio Generation)
 
+### Core & Backend
+- Python 3.10+
+- `asyncio` (Asynchronous Audio Generation)
+
 ### Utilities
 - NumPy
 - Pillow
 
----
-
 ## 🚀 Installation & Quick Start
 
 ### 1. Clone Repository
-
 ```bash
-git clone [https://github.com/tusharsingh-sde/HazardLens.git](https://github.com/tusharsingh-sde/HazardLens.git)
-
+git clone https://github.com/tusharsingh-sde/HazardLens.git
 cd HazardLens
+```
 
 ### Install Dependencies
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -138,7 +139,7 @@ streamlit run app.py
 
 B.Tech CSE Student
 
-Passionate about AI, Computer Vision, Smart Infrastructure and Public Safety Systems.
+Passionate about AI/ML, Software Development and problem solving.
 
 GitHub: https://github.com/tusharsingh-sde
 
