@@ -1,0 +1,5 @@
+# .dockerignore file se *.pt hata dein
+__pycache__
+*.pyc
+.git
+venv/
