@@ -330,7 +330,7 @@ def create_placeholder(cam_name, status="STANDBY"):
 # ─── EDGE-TTS HINDI NEURAL VOICE (LIFETIME FREE) ───
 # ('hi-IN-SwaraNeural')
 # ─────────────────────────────────────────────────────────────────────────────
-def trigger_hindi_alert(text):
+def trigger_hindi_alert(text, filename="alert.mp3"):
     async def _generate():
         # for Female = "hi-IN-SwaraNeural" | for Male = "hi-IN-MadhurNeural"
         communicate = edge_tts.Communicate(text, "hi-IN-SwaraNeural")
@@ -360,7 +360,7 @@ with st.sidebar:
     st.markdown('<div class="sb-lbl">▸ Feed Source</div>', unsafe_allow_html=True)
     ip_url = st.text_input(
         "IP Camera Stream URL",
-        "http://192.168.1.7:8080/video",
+        "http://10.60.88.135:8080/video",
         label_visibility="collapsed"
     )
 
@@ -563,6 +563,7 @@ if st.session_state.system_armed:
 
     count      = 0
     frame_skip = 4
+    CROWD_THRESHOLD = 10  # Threshold yahan upar cleanly define kar diya
 
     while cap.isOpened() and st.session_state.system_armed:
         ret, frame = cap.read()
@@ -605,19 +606,15 @@ if st.session_state.system_armed:
             if feed_01_frame is not None:
                 feed_01_frame.image(annotated_rgb, channels="RGB", use_container_width=True)
 
-            # ── FIRE / SMOKE ALERT ──
-            # for Chinese ('火', '烟') and English ('fire', 'smoke') it will handle both cases
+            # ── HAZARD DETECTION LOGIC ──
+            # Handles both Chinese ('火', '烟') and English ('fire', 'smoke') labels
             fire_spotted = any(
                 fire_model.names[int(b.cls[0])].lower() in ('fire', 'smoke', '火', '烟')
                 for b in fire_results[0].boxes
             )
 
-            # ── 2. OVERCROWDING ALERT (Latest Override) ──
-            CROWD_THRESHOLD = 1  
-
-            # ── 1. FIRE / SMOKE ALERT ──
+            # ── 1. FIRE / SMOKE ALERT (Top Priority) ──
             if fire_spotted:
-                # Trigger only if no Fire Alert is currently active (Fire Alert overrides Crowd Alert).
                 if st.session_state.get("active_alert") != "FIRE":
                     alert_pos.markdown("""
                     <div class="a-fire">
@@ -636,7 +633,6 @@ if st.session_state.system_armed:
 
             # ── 2. OVERCROWDING ALERT (Latest Override) ──
             elif person_count > CROWD_THRESHOLD:
-                # Trigger only if no Fire Alert is currently active (Fire Alert overrides Crowd Alert).
                 if st.session_state.get("active_alert") != "CROWD":
                     alert_pos.markdown(f"""
                     <div class="a-crwd">
@@ -653,8 +649,10 @@ if st.session_state.system_armed:
                     )
                     st.session_state.active_alert = "CROWD"
             
-            # ── 3. RESET (if no alerts are detected) ──
+            # ── 3. RESET (When frame is clear & normal) ──
             else:
+                if st.session_state.get("active_alert") is not None:
+                    alert_pos.empty()  # <-- CRITICAL: Screen se purana alert banner clear karega
                 st.session_state.active_alert = None
 
     cap.release()
