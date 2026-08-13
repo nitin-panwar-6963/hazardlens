@@ -1,88 +1,214 @@
+<div align="center">
+
 # 🚨 HazardLens
 
-### Real-Time AI Surveillance, Hazard Detection & Emergency Response Platform
+### Real-Time AI Surveillance & Emergency Response Platform
 
-**HazardLens** is an AI-powered surveillance platform that transforms traditional CCTV/IP cameras into intelligent hazard monitoring systems.
+**Turning CCTV cameras into intelligent hazard detection systems.**
 
-It uses **YOLOv8, OpenCV and Streamlit** to detect **fire, smoke and overcrowding** in real time and provides instant visual and Hindi voice alerts.
+<br/>
 
-The application is **Dockerized** for consistent deployment, while **Terraform + AWS** are used for cloud infrastructure automation.
+<img src="https://img.shields.io/badge/AI-YOLOv8-blue?style=for-the-badge&logo=ai" />
+<img src="https://img.shields.io/badge/Frontend-React-61DAFB?style=for-the-badge&logo=react" />
+<img src="https://img.shields.io/badge/Backend-Python-3776AB?style=for-the-badge&logo=python" />
+<img src="https://img.shields.io/badge/DevOps-Docker-2496ED?style=for-the-badge&logo=docker" />
+<img src="https://img.shields.io/badge/Cloud-AWS-FF9900?style=for-the-badge&logo=amazonaws" />
+<img src="https://img.shields.io/badge/IaC-Terraform-7B42BC?style=for-the-badge&logo=terraform" />
+
+<br/><br/>
+
+</div>
 
 ---
 
-## 🎯 Problem Statement
+## 🚨 About HazardLens
 
-Traditional CCTV systems depend on human operators to continuously monitor video feeds and identify emergencies.
+<table>
+<tr>
+<td width="60%">
 
-This can cause delays in:
+**HazardLens** is an AI-powered real-time surveillance platform designed to transform traditional **CCTV/IP cameras into intelligent monitoring systems**.
 
-**Detection → Verification → Alert → Response**
+The platform analyzes live video streams using **YOLOv8 and OpenCV** to detect:
 
-HazardLens automates this process by continuously analyzing live camera feeds and generating alerts whenever a potential hazard is detected.
+* 🔥 Fire
+* 💨 Smoke
+* 👥 Overcrowding
 
-> **Detect hazards early. Alert instantly. Respond faster.**
+When a hazard is detected, the system generates **real-time visual alerts and Hindi voice notifications**, helping reduce emergency response time.
+
+</td>
+
+<td width="40%">
+
+```text
+📹 CCTV
+   ↓
+👁️ Computer Vision
+   ↓
+🤖 AI Detection
+   ↓
+🚨 Alert Engine
+   ↓
+🖥️ Dashboard
+   +
+🎙️ Voice Alert
+```
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## ✨ Key Features
 
-* 🔥 **Fire & Smoke Detection** — Custom YOLOv8-based detection model
-* 👥 **Crowd Monitoring** — Real-time person detection and overcrowding alerts
-* 🚨 **Smart Alert System** — `"Latest Hazard Wins"` event management
-* 🎙️ **Hindi Voice Alerts** — Microsoft Edge-TTS integration
-* 📹 **CCTV/IP Camera Support** — OpenCV-based live video processing
-* 🖥️ **Command Center Dashboard** — Real-time Streamlit interface
-* 🎯 **Confidence Filtering** — Configurable detection threshold
-* 🐳 **Dockerized Application** — Portable and reproducible deployment
-* ☁️ **Terraform + AWS** — Infrastructure as Code
+<table>
+<tr>
+<td width="50%">
+
+### 🔥 Fire & Smoke Detection
+
+YOLOv8-powered real-time detection for fire and smoke events.
+
+### 👥 Crowd Monitoring
+
+Detects people and identifies potential overcrowding situations.
+
+### 🚨 Smart Alert Engine
+
+Priority-based `"Latest Hazard Wins"` logic prevents repeated and conflicting alerts.
+
+</td>
+
+<td width="50%">
+
+### 🎙️ Hindi Voice Alerts
+
+Generates localized Hindi emergency notifications using Edge-TTS.
+
+### 📹 Live CCTV Support
+
+OpenCV-based processing for CCTV and IP camera streams.
+
+### 🖥️ Real-Time Dashboard
+
+Modern monitoring interface for live detections and alerts.
+
+</td>
+</tr>
+</table>
 
 ---
 
-## 🏗️ System Architecture
+## 🧠 System Architecture
+
+<div align="center">
 
 ```text
-              CCTV / IP Camera
-                      │
-                      ▼
-               OpenCV Processing
-                      │
-             ┌────────┴────────┐
-             ▼                 ▼
-      Fire / Smoke AI      Crowd AI
-         YOLOv8             YOLOv8
-             │                 │
-             └────────┬────────┘
-                      ▼
-              Hazard Detection
-                      │
-                      ▼
-               Alert Manager
-                 ┌────┴────┐
-                 ▼         ▼
-            Streamlit    Hindi Voice
-            Dashboard      Alert
+                    ┌───────────────────┐
+                    │   CCTV / IP Feed  │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ OpenCV Processing │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+             ┌─────────────┐     ┌─────────────┐
+             │ Fire/Smoke  │     │ Crowd Model │
+             │   YOLOv8    │     │   YOLOv8    │
+             └──────┬──────┘     └──────┬──────┘
+                    │                   │
+                    └─────────┬─────────┘
+                              ▼
+                    ┌───────────────────┐
+                    │ Hazard Detection  │
+                    │    & Alert Engine │
+                    └─────────┬─────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+             ┌─────────────┐     ┌─────────────┐
+             │ React        │     │ Hindi Voice │
+             │ Dashboard    │     │    Alert    │
+             └─────────────┘     └─────────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ Docker Container  │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │   AWS + Terraform │
+                    └───────────────────┘
 ```
 
----
-
-## 🛠️ Tech Stack
-
-| Category            | Technologies          |
-| ------------------- | --------------------- |
-| 🤖 AI/ML            | YOLOv8, Ultralytics   |
-| 👁️ Computer Vision | OpenCV, NumPy, Pillow |
-| 🖥️ Dashboard       | Streamlit             |
-| 🔊 Voice            | Microsoft Edge-TTS    |
-| 🐍 Backend          | Python, AsyncIO       |
-| 🐳 DevOps           | Docker                |
-| ☁️ Cloud            | AWS                   |
-| 🏗️ Infrastructure  | Terraform             |
+</div>
 
 ---
 
-## 🐳 Docker Setup
+## 🛠️ Technology Stack
 
-HazardLens can be deployed as a Docker container.
+<table>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+</tr>
+
+<tr>
+<td>🎨 Frontend Framework</td>
+<td>React.js</td>
+</tr>
+
+<tr>
+<td>🎨 UI Styling</td>
+<td>Tailwind CSS</td>
+</tr>
+
+<tr>
+<td>🤖 AI/ML Framework</td>
+<td>Ultralytics YOLOv8</td>
+</tr>
+
+<tr>
+<td>👁️ Computer Vision</td>
+<td>OpenCV, NumPy, Pillow</td>
+</tr>
+
+<tr>
+<td>⚙️ Backend</td>
+<td>Python, AsyncIO</td>
+</tr>
+
+<tr>
+<td>🔊 Voice Engine</td>
+<td>Microsoft Edge-TTS</td>
+</tr>
+
+<tr>
+<td>🐳 Containerization</td>
+<td>Docker</td>
+</tr>
+
+<tr>
+<td>☁️ Cloud Platform</td>
+<td>AWS</td>
+</tr>
+
+<tr>
+<td>🏗️ Infrastructure as Code</td>
+<td>Terraform</td>
+</tr>
+
+</table>
+
+---
+
+## 🐳 Docker Deployment
 
 ### Build Image
 
@@ -105,7 +231,7 @@ docker run -d \
 docker ps
 ```
 
-### Open Dashboard
+### Access Application
 
 ```text
 http://localhost:8501
@@ -113,15 +239,19 @@ http://localhost:8501
 
 ---
 
-## ☁️ Terraform & AWS
+## ☁️ Cloud Infrastructure
 
-Cloud infrastructure is maintained separately using Terraform.
+The AWS infrastructure is maintained separately using **Terraform**.
 
-### Terraform Repository
+<div align="center">
 
-https://github.com/nitin-panwar-6963/HazardLens-terraform.git
+### 🔗 Terraform Repository
 
-Basic workflow:
+<a href="https://github.com/nitin-panwar-6963/HazardLens-terraform">
+  <img src="https://img.shields.io/badge/Terraform%20Infrastructure-View%20Repository-7B42BC?style=for-the-badge&logo=terraform" />
+</a>
+
+</div>
 
 ```bash
 terraform init
@@ -130,8 +260,6 @@ terraform plan
 terraform apply
 ```
 
-Infrastructure is maintained by **Nitin Panwar — DevOps & Cloud Engineer**.
-
 ---
 
 ## 📁 Project Structure
@@ -139,83 +267,98 @@ Infrastructure is maintained by **Nitin Panwar — DevOps & Cloud Engineer**.
 ```text
 HazardLens/
 │
-├── app.py
-├── best.pt
-├── requirements.txt
-├── Dockerfile
-├── README.md
+├── frontend/
+│   └── React Application
 │
-└── assets/
-    ├── dashboard.png
-    ├── fire-detection.png
-    └── crowd-detection.png
+├── backend/
+│   ├── app.py
+│   └── AI Detection Logic
+│
+├── models/
+│   └── best.pt
+│
+├── assets/
+│   ├── dashboard.png
+│   ├── fire-detection.png
+│   └── crowd-detection.png
+│
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## 🖼️ Dashboard
+## 🎯 Use Cases
 
-Add project screenshots to the `assets/` directory:
-
-```markdown
-![HazardLens Dashboard](assets/dashboard.png)
-```
-
----
-
-## 🎯 Potential Applications
-
-* 🏙️ Smart Cities
-* 🏫 University Campuses
-* 🚉 Railway Stations
-* ✈️ Airports
-* 🏭 Industrial Facilities
-* 🛍️ Shopping Malls
-* 🎪 Public Events
-* 🏢 Corporate Buildings
+<table>
+<tr>
+<td align="center">🏙️<br/><b>Smart Cities</b></td>
+<td align="center">🚉<br/><b>Railway Stations</b></td>
+<td align="center">✈️<br/><b>Airports</b></td>
+</tr>
+<tr>
+<td align="center">🏫<br/><b>Campuses</b></td>
+<td align="center">🏭<br/><b>Industries</b></td>
+<td align="center">🏟️<br/><b>Public Events</b></td>
+</tr>
+</table>
 
 ---
 
-## 🔮 Future Scope
+## 🔮 Future Roadmap
 
-* Multi-camera monitoring
-* Cloud-based emergency notifications
-* CI/CD automation
-* Kubernetes deployment
-* Prometheus & Grafana monitoring
-* Historical incident analytics
-* Automated emergency escalation
+* [ ] Multi-camera monitoring
+* [ ] Cloud-based emergency notifications
+* [ ] CI/CD automation
+* [ ] Kubernetes deployment
+* [ ] Prometheus & Grafana monitoring
+* [ ] Historical incident analytics
+* [ ] Automated emergency escalation
 
 ---
 
 ## 👥 Team
 
+<table>
+<tr>
+
+<td align="center" width="50%">
+
 ### ☁️ Nitin Panwar
 
 **DevOps & Cloud Engineer**
 
-Responsible for:
+Docker • Terraform • AWS • Cloud Infrastructure • Deployment
 
-`Docker` • `Terraform` • `AWS` • `Deployment` • `Cloud Infrastructure`
+<a href="https://github.com/nitin-panwar-6963">
+<img src="https://img.shields.io/badge/GitHub-Nitin%20Panwar-black?style=for-the-badge&logo=github" />
+</a>
 
-GitHub:
-https://github.com/nitin-panwar-6963
+<br/><br/>
 
-Terraform:
-https://github.com/nitin-panwar-6963/HazardLens-terraform
+<a href="https://github.com/nitin-panwar-6963/HazardLens-terraform">
+<img src="https://img.shields.io/badge/Terraform-Repository-7B42BC?style=for-the-badge&logo=terraform" />
+</a>
 
----
+</td>
+
+<td align="center" width="50%">
 
 ### 🤖 Tushar Singh
 
 **Backend & AI Integration**
 
-Responsible for:
+Python • YOLOv8 • AI/ML • Computer Vision • Backend
 
-`Python` • `YOLOv8` • `AI/ML` • `Computer Vision` • `Backend Logic`
+<a href="https://github.com/tusharsingh-sde">
+<img src="https://img.shields.io/badge/GitHub-Tushar%20Singh-black?style=for-the-badge&logo=github" />
+</a>
 
-GitHub:
-https://github.com/tusharsingh-sde
+</td>
+
+</tr>
+</table>
 
 ---
 
@@ -227,10 +370,14 @@ This project is licensed under the **MIT License**.
 
 <div align="center">
 
-### 🚨 HazardLens
+## 🚨 HazardLens
 
-**See the Hazard. Understand the Risk. Respond Faster.**
+### **See the Hazard. Understand the Risk. Respond Faster.**
 
-Built with **AI + Computer Vision + Cloud + DevOps**
+**AI • Computer Vision • React • Docker • AWS • Terraform**
+
+<br/>
+
+⭐ **Star the repository if you like the project!**
 
 </div>
