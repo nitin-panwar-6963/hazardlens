@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: hazardlens-service
+  namespace: hazardlens
+
+spec:
+  selector:
+    app: hazard
+
+  ports:
+  - targetPort: 8501
+    port: 8501
+    protocol: "TCP"

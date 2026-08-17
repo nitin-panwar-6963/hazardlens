@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+  name: hazard-deploy
+  namespace: hazardlens
+
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hazard
+  template:
+    metadata:
+      labels:
+        app: hazard
+    spec:
+      containers:
+        - name: hazardlens
+          image: nitinpanwar6963/hazardlens
+          ports:
+          - containerPort: 8501
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+
+            limits:
+              cpu: "8"
+              memory: "1Gi"
+
