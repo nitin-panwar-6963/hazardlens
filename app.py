@@ -22,7 +22,7 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap');  
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap');
 
 :root {
   --bg:     #050A0F;
@@ -335,13 +335,13 @@ def trigger_hindi_alert(text, filename="alert.mp3"):
         # for Female = "hi-IN-SwaraNeural" | for Male = "hi-IN-MadhurNeural"
         communicate = edge_tts.Communicate(text, "hi-IN-SwaraNeural")
         await communicate.save("temp_alert.mp3")
-    
+
     try:
         asyncio.run(_generate())
-        
+
         with open("temp_alert.mp3", "rb") as f:
             audio_b64 = base64.b64encode(f.read()).decode()
-            
+
         audio_pos.markdown(
             f'<audio id="alarm-audio" autoplay loop>'
             f'<source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3"></audio>',
@@ -581,7 +581,7 @@ if st.session_state.system_armed:
             # REAL-TIME CCTV TIMESTAMP
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cctv_text = f"REC | CAM 01 | {now}"
-            
+
             cv2.putText(annotated_rgb, cctv_text, (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 0), 4, cv2.LINE_AA)
             cv2.putText(annotated_rgb, cctv_text, (15, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2, cv2.LINE_AA)
 
@@ -624,7 +624,7 @@ if st.session_state.system_armed:
                         <div class="a-msg">MIET Main Gate · High-confidence AI detection · Fire Safety Team Dispatched</div>
                       </div>
                     </div>""", unsafe_allow_html=True)
-                    
+
                     trigger_hindi_alert(
                         "कृपया ध्यान दें। मेन गेट पर आग डिटेक्ट हुई है। तुरंत फायर सेफ्टी टीम डिस्पैच करें।",
                         filename="fire_alert.mp3"
@@ -642,13 +642,13 @@ if st.session_state.system_armed:
                         <div class="a-msg">MIET Main Gate · Live Count: {person_count} persons · Security Team Dispatch Triggered</div>
                       </div>
                     </div>""", unsafe_allow_html=True)
-                    
+
                     trigger_hindi_alert(
                         "कृपया ध्यान दें। मेन गेट एंट्रेंस पर ओवरक्राउडिंग डिटेक्ट हुई है। तुरंत सिक्योरिटी स्टाफ डिस्पैच करें।",
                         filename="crowd_alert.mp3"
                     )
                     st.session_state.active_alert = "CROWD"
-            
+
             # ── 3. RESET (When frame is clear & normal) ──
             else:
                 if st.session_state.get("active_alert") is not None:
